@@ -4,7 +4,86 @@ Overall interface (including MIDI) for talking to the outside world.
 $Id: interfacing.py,v 7a3432f42e77 2011/03/11 21:55:04 nick $
 """
 
-from basis import Pulse
+from basis import Chain, Pulse
+
+class KeyboardChain(Chain):
+    """
+    A chain which can hold the notes played/held on a keyboard. At present
+    the notes are only in chronological order, and we only hold the pitches.
+    Repeated notes are discarded.
+    (We might change this at some stage to have it encapsulate individual
+    chains for pitch and velocity.)
+    """
+    def __init__(self, context):
+        Chain.__init__(self, context)
+        self.__pitches = []
+
+    def instance(self):
+        return self.__pitches
+
+    def noteOn(self, pitch, velocity):
+        """
+        >>> from const import C
+        >>> context = C(get=Mock('get', returns=1))
+        >>> k = KeyboardChain(context)
+        >>> k.noteOn(60, 64)
+        >>> k.noteOn(72, 64)
+        >>> k[0]
+        Called get()
+        60
+        >>> k[1]
+        Called get()
+        72
+        """
+        if not pitch in self.__pitches:
+            self.__pitches.append(pitch)
+
+    def noteOff(self, pitch):
+        """
+        >>> from const import C
+        >>> context = C(get=Mock('get', returns=1))
+        >>> k = KeyboardChain(context)
+        >>> k.noteOn(60, 64)
+        >>> k.noteOff(60)
+        >>> {'a': k[0]}
+        Called get()
+        {'a': None}
+        >>> k.noteOn(60, 64)
+        >>> k.noteOn(72, 64)
+        >>> k.noteOn(60, 64)
+        >>> k.length()
+        Called get()
+        2
+        >>> k[0]
+        Called get()
+        60
+        >>> k[1]
+        Called get()
+        72
+        >>> k.noteOff(60)
+        >>> k[0]
+        Called get()
+        72
+        >>> k.noteOff(72)
+        >>> {'a': k[0]}
+        Called get()
+        {'a': None}
+        """
+        if pitch in self.__pitches:
+            self.__pitches.remove(pitch)
+
+    def allNotesOff(self):
+        """
+        >>> from const import C
+        >>> context = C(get=Mock('get', returns=1))
+        >>> k = KeyboardChain(context)
+        >>> k.noteOn(60, 64)
+        >>> k.allNotesOff()
+        >>> {'a': k[0]}
+        Called get()
+        {'a': None}
+        """
+        self.__pitches = []
 
 class MidiIntHolder(Pulse):
     """
@@ -48,7 +127,7 @@ class OutputterPulse(Pulse):
         Called emitNote()
         """
         self.__outputter.emitNote()
-    
+
 class Outputter:
     """
     Holder, and emitter, of bundled MIDI note messages. Wrapped around
