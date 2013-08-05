@@ -1,12 +1,11 @@
 """
-Wrapper for the new, python-based pulse sequencer.
-
-p = fanout(p1, p2, p3, p4, notes.fire)
-q = indexer(p, heldNotes, firstIf: x, ...)
-q.fire(0)
-
-$Id$
+Example 'main program' for the new, python-based pulse sequencer.
 """
+
+# For multiple instances, it makes sense to put the root of the pulse sequencer code somewhere
+# shared, and then do something like this:
+#import os.path.expanduser
+#sys.path.append(expanduser("~/GITHUB/cassiel/pulse-sequencer/python"))
 
 from core.interfacing import Outputter
 from core.basis import Context
