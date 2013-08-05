@@ -24,54 +24,6 @@ class Sprayer(Pulse):
     def doFire(self, i):
         for p in self.__pulses: p.fire(i)
 
-class CyclerOLD(Pulse):
-    def __init__(self, context, chain, outPulse):
-        """
-        Temporary: we need to implement our full sequence-advance pulse.
-
-        >>> from const import C
-        >>> chain = C(length=Mock('length', returns=3),
-        ...               __getitem__=Mock('get', returns_iter=[99, 98, 97, 99])
-        ...              )
-        >>> pulse = C(fire=Mock('fire'))
-        >>> p = CyclerOLD(None, chain, pulse)
-        >>> p.fire(0)
-        Called length()
-        Called get(0)
-        Called fire(99)
-        >>> p.fire(0)
-        Called length()
-        Called get(1)
-        Called fire(98)
-        >>> p.fire(0)
-        Called length()
-        Called get(2)
-        Called fire(97)
-        >>> p.fire(0)
-        Called length()
-        Called get(0)
-        Called fire(99)
-
-        >>> chain = C(length=Mock('length', returns=0), __getitem__=Mock('get', returns=None))
-        >>> pulse = C(doFire=Mock('fire'))
-        >>> p = CyclerOLD(None, chain, pulse)
-        >>> p.fire(0)
-        Called length()
-        Called get(0)
-        """
-        Pulse.__init__(self, context)
-        self.__chain = chain
-        self.__outPulse = outPulse
-        self.__index = 0
-        
-    def doFire(self, i):
-        if self.__index >= self.__chain.length():
-            self.__index = 0
-
-        val = self.__chain[self.__index]
-        if val is not None: self.__outPulse.fire(val)
-        self.__index += 1
-
 class Cycler(Pulse):
     """
     Our full-on chain-cycling pulse. Runs along a chain,
@@ -80,10 +32,10 @@ class Cycler(Pulse):
 
         firstIf: <c> - reset to start of chain, and fire, if
         incoming pulse is between c[0] and c[1] inclusive.
-        
+
         nextIf: <c> - if not firstIf(), then pre-advance
         position and fire if between c[0] and c[1] inclusive.
-        
+
         loopIf: <c> - if nextIf(), and the counter has just
         gone past the end of the chain, wrap the counter
         by modulo(chain length) and fire if between c[0]
