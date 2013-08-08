@@ -36,7 +36,7 @@ class Assembler(Chain):
         ...
         Called get()
         {'a': None}
-        
+
         >>> c0 = Assembler(context, '5.6')
         >>> c = Assembler(context, 1, [2, 4], c0, None, 7)
         >>> c[2]
@@ -61,6 +61,40 @@ class Assembler(Chain):
         for c in self.__chains:
             result += [c[i] for i in range(c.length())]
         return result
+
+class Atom(Chain):
+    """
+    This is a chain with a single integer value, added using `set`.
+    The optional keyword argument `default` sets the initial value.
+    """
+    def __init__(self, context, **kw):
+        Chain.__init__(self, context)
+        if kw.has_key('default'):
+            self.__value = kw['default']
+        else:
+            self.__value = None
+
+    def set(self, value):
+        self.__value = value
+
+    def instance(self):
+        """
+        >>> from const import C
+        >>> context = C(get=Mock('get', returns=1))
+        >>> print Atom(context)
+        Called get()
+        [.]
+        >>> print Atom(context, default=49)
+        Called get()
+        [49]
+        >>> a = Atom(context, default=30)
+        >>> a.set(40)
+        >>> print a
+        Called get()
+        [40]
+        """
+        return [self.__value]
+
 
 class Transposer(Chain):
     """
