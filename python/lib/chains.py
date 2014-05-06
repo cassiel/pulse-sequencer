@@ -69,7 +69,7 @@ class Atom(Chain):
     """
     def __init__(self, context, **kw):
         Chain.__init__(self, context)
-        if kw.has_key('default'):
+        if 'default' in kw:
             self.__value = kw['default']
         else:
             self.__value = None
