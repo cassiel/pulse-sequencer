@@ -128,6 +128,18 @@ class OutputterPulse(Pulse):
         """
         self.__outputter.emitNote()
 
+class CtrlOutput(Pulse):
+    """
+    Pulse to send out CC messages.
+    """
+    def __init__(self, maxObject, context, cc_no):
+        Pulse.__init__(self, context)
+        self.__maxObject = maxObject
+        self.__cc_no = cc_no
+
+    def doFire(self, i):
+        self.__maxObject.outletHigh(1, [self.__cc_no, i])
+
 class Outputter:
     """
     Holder, and emitter, of bundled MIDI note messages. Wrapped around
